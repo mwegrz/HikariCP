@@ -118,9 +118,10 @@ skip this method entirely and call ``addDataSourceProperty("pass", ...)``, for e
 ##### Frequently used
 
 &#9989;``autoCommit``<br/>
+**If your driver does not support transactions leave this setting undefined**
 This property controls the default auto-commit behavior of connections returned from the pool.
 It is a boolean value.
-*Default: true*
+*Default: none*
 
 &#8986;``connectionTimeout``<br/>
 This property controls the maximum number of milliseconds that a client (that's you) will wait
@@ -214,7 +215,7 @@ This property controls whether *Connections* obtained from the pool are in read-
 default.  Note some databases do not support the concept of read-only mode, while others provide
 query optimizations when the *Connection* is set to read-only.  Whether you need this property
 or not will depend largely on your application and database. 
-*Default: false*
+*Default: none*
 
 &#10062;``registerMbeans``<br/>
 This property controls whether or not JMX Management Beans ("MBeans") are registered or not.

@@ -46,7 +46,7 @@ public final class PoolElf
    private final String poolName;
    private final String catalog;
    private final Boolean isReadOnly;
-   private final boolean isAutoCommit;
+   private final Boolean isAutoCommit;
    private final boolean isUseJdbc4Validation;
    private final boolean isIsolateInternalQueries;
 
@@ -109,8 +109,22 @@ public final class PoolElf
    {
       if (transactionIsolationName != null) {
          try {
-            Field field = Connection.class.getField(transactionIsolationName);
-            return field.getInt(null);
+            final String upperName = transactionIsolationName.toUpperCase();
+            if (upperName.startsWith("TRANSACTION_")) {
+               Field field = Connection.class.getField(upperName);
+               return field.getInt(null);
+            }
+            final int level = Integer.parseInt(transactionIsolationName);
+            switch (level) {
+               case Connection.TRANSACTION_READ_UNCOMMITTED:
+               case Connection.TRANSACTION_READ_COMMITTED:
+               case Connection.TRANSACTION_REPEATABLE_READ:
+               case Connection.TRANSACTION_SERIALIZABLE:
+               case Connection.TRANSACTION_NONE:
+                  return level;
+               default:
+                  throw new IllegalArgumentException();
+             }
          }
          catch (Exception e) {
             throw new IllegalArgumentException("Invalid transaction isolation value: " + transactionIsolationName);
@@ -165,14 +179,18 @@ public final class PoolElf
       }
 
       networkTimeout = getAndSetNetworkTimeout(connection, connectionTimeout);
-      transactionIsolation = (transactionIsolation < 0 ? connection.getTransactionIsolation() : transactionIsolation);
 
-      connection.setAutoCommit(isAutoCommit);
+      if (isAutoCommit != null) {
+         connection.setAutoCommit(isAutoCommit);
+      }
+
       if (isReadOnly != null) {
          connection.setReadOnly(isReadOnly);
       }
 
-      if (transactionIsolation != connection.getTransactionIsolation()) {
+      final int defaultLevel = connection.getTransactionIsolation();
+      transactionIsolation = (transactionIsolation < 0 ? defaultLevel : transactionIsolation);
+      if (transactionIsolation != defaultLevel) {
          connection.setTransactionIsolation(transactionIsolation);
       }
 
@@ -205,12 +223,10 @@ public final class PoolElf
    
          try (Statement statement = connection.createStatement()) {
             setQueryTimeout(statement, timeoutSec);
-            if (statement.execute(config.getConnectionTestQuery())) {
-               statement.getResultSet().close();
-            }
+            statement.execute(config.getConnectionTestQuery());
          }
    
-         if (isIsolateInternalQueries && !isAutoCommit) {
+         if (isIsolateInternalQueries && isAutoCommit != null && !isAutoCommit) {
             connection.rollback();
          }
    
@@ -266,7 +282,11 @@ public final class PoolElf
          poolEntry.setReadOnly(isReadOnly);
       }
       poolEntry.setCatalog(catalog);
-      poolEntry.setAutoCommit(isAutoCommit);
+
+      if (isAutoCommit != null) {
+         poolEntry.setAutoCommit(isAutoCommit);
+      }
+
       poolEntry.setNetworkTimeout(networkTimeout);
       poolEntry.setTransactionIsolation(transactionIsolation);
    }
@@ -434,15 +454,13 @@ public final class PoolElf
     * @param isAutoCommit whether to commit the SQL after execution or not
     * @throws SQLException throws if the init SQL execution fails
     */
-   private void executeSql(final Connection connection, final String sql, final boolean isAutoCommit) throws SQLException
+   private void executeSql(final Connection connection, final String sql, final Boolean isAutoCommit) throws SQLException
    {
       if (sql != null) {
          try (Statement statement = connection.createStatement()) {
-            if (statement.execute(sql)) {
-               statement.getResultSet().close();
-            }
+            statement.execute(sql);
 
-            if (!isAutoCommit) {
+            if (isAutoCommit != null && !isAutoCommit) {
                connection.commit();
             }
          }

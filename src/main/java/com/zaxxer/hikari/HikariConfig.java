@@ -79,7 +79,7 @@ public class HikariConfig implements HikariConfigMXBean
    private String poolName;
    private String transactionIsolationName;
    private String username;
-   private boolean isAutoCommit;
+   private Boolean isAutoCommit;
    private Boolean isReadOnly;
    private boolean isInitializationFailFast;
    private boolean isIsolateInternalQueries;
@@ -105,7 +105,6 @@ public class HikariConfig implements HikariConfigMXBean
       connectionTimeout = CONNECTION_TIMEOUT;
       validationTimeout = VALIDATION_TIMEOUT;
       idleTimeout = IDLE_TIMEOUT;
-      isAutoCommit = true;
       isInitializationFailFast = true;
       minIdle = -1;
       maxPoolSize = 10;
@@ -363,7 +362,7 @@ public class HikariConfig implements HikariConfigMXBean
     *
     * @return the default auto-commit behavior of connections
     */
-   public boolean isAutoCommit()
+   public Boolean isAutoCommit()
    {
       return isAutoCommit;
    }
@@ -373,7 +372,7 @@ public class HikariConfig implements HikariConfigMXBean
     *
     * @param isAutoCommit the desired auto-commit default for connections
     */
-   public void setAutoCommit(boolean isAutoCommit)
+   public void setAutoCommit(Boolean isAutoCommit)
    {
       this.isAutoCommit = isAutoCommit;
    }
@@ -452,7 +451,7 @@ public class HikariConfig implements HikariConfigMXBean
    public void setMetricsTrackerFactory(MetricsTrackerFactory metricsTrackerFactory)
    {
       if (metricRegistry != null) {
-         throw new IllegalStateException("setMetricsTrackerFactory() cannot used in combination with setMetricRegistry()");
+         throw new IllegalStateException("cannot use setMetricsTrackerFactory() and setMetricRegistry() together");
       }
 
       this.metricsTrackerFactory = metricsTrackerFactory;
@@ -476,14 +475,14 @@ public class HikariConfig implements HikariConfigMXBean
    public void setMetricRegistry(Object metricRegistry)
    {
       if (metricsTrackerFactory != null) {
-         throw new IllegalStateException("setMetricRegistry() cannot used in combination with setMetricsTrackerFactory()");
+         throw new IllegalStateException("cannot use setMetricRegistry() and setMetricsTrackerFactory() together");
       }
 
       if (metricRegistry != null) {
          if (metricRegistry instanceof String) {
             try {
                InitialContext initCtx = new InitialContext();
-               metricRegistry = (MetricRegistry) initCtx.lookup((String) metricRegistry);
+               metricRegistry = initCtx.lookup((String) metricRegistry);
             }
             catch (NamingException e) {
                throw new IllegalArgumentException(e);
@@ -519,7 +518,7 @@ public class HikariConfig implements HikariConfigMXBean
          if (healthCheckRegistry instanceof String) {
             try {
                InitialContext initCtx = new InitialContext();
-               healthCheckRegistry = (HealthCheckRegistry) initCtx.lookup((String) healthCheckRegistry);
+               healthCheckRegistry = initCtx.lookup((String) healthCheckRegistry);
             }
             catch (NamingException e) {
                throw new IllegalArgumentException(e);
@@ -760,11 +759,11 @@ public class HikariConfig implements HikariConfigMXBean
 
       if (driverClassName != null && jdbcUrl == null) {
          logger.error("jdbcUrl is required with driverClassName");
-         throw new IllegalStateException("jdbcUrl is required with driverClassName");
+         throw new IllegalArgumentException("jdbcUrl is required with driverClassName");
       }
       else if (driverClassName != null && dataSourceClassName != null) {
          logger.error("cannot use driverClassName and dataSourceClassName together");
-         throw new IllegalStateException("cannot use driverClassName and dataSourceClassName together");
+         throw new IllegalArgumentException("cannot use driverClassName and dataSourceClassName together");
       }
       else if (jdbcUrl != null) {
          // OK
@@ -824,7 +823,7 @@ public class HikariConfig implements HikariConfigMXBean
 
    private void logConfiguration()
    {
-      LOGGER.debug("HikariCP pool {} configuration:", poolName);
+      LOGGER.debug("{} - configuration:", poolName);
       final Set<String> propertyNames = new TreeSet<>(PropertyElf.getPropertyNames(HikariConfig.class));
       for (String prop : propertyNames) {
          try {
