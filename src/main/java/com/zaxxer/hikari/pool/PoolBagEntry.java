@@ -52,7 +52,7 @@ public final class PoolBagEntry implements IConcurrentBagEntry
    public volatile boolean evicted;
    public volatile boolean aborted;
 
-   public boolean isAutoCommit;
+   public Boolean isAutoCommit;
    int networkTimeout;
    int transactionIsolation;
    String catalog;
@@ -151,7 +151,7 @@ public final class PoolBagEntry implements IConcurrentBagEntry
    /**
     * @param isAutoCommit the isAutoCommit to set
     */
-   public void setAutoCommit(boolean isAutoCommit)
+   public void setAutoCommit(Boolean isAutoCommit)
    {
       this.isAutoCommit = isAutoCommit;
    }
@@ -159,7 +159,7 @@ public final class PoolBagEntry implements IConcurrentBagEntry
    /**
     * @param isReadOnly the isReadOnly to set
     */
-   public void setReadOnly(boolean isReadOnly)
+   public void setReadOnly(Boolean isReadOnly)
    {
       this.isReadOnly = isReadOnly;
    }

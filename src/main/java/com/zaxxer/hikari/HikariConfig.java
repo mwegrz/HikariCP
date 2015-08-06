@@ -79,7 +79,7 @@ public class HikariConfig implements HikariConfigMXBean
    private String poolName;
    private String transactionIsolationName;
    private String username;
-   private boolean isAutoCommit;
+   private Boolean isAutoCommit;
    private Boolean isReadOnly;
    private boolean isInitializationFailFast;
    private boolean isIsolateInternalQueries;
@@ -105,7 +105,6 @@ public class HikariConfig implements HikariConfigMXBean
       connectionTimeout = CONNECTION_TIMEOUT;
       validationTimeout = VALIDATION_TIMEOUT;
       idleTimeout = IDLE_TIMEOUT;
-      isAutoCommit = true;
       isInitializationFailFast = true;
       minIdle = -1;
       maxPoolSize = 10;
@@ -363,7 +362,7 @@ public class HikariConfig implements HikariConfigMXBean
     *
     * @return the default auto-commit behavior of connections
     */
-   public boolean isAutoCommit()
+   public Boolean isAutoCommit()
    {
       return isAutoCommit;
    }
@@ -373,7 +372,7 @@ public class HikariConfig implements HikariConfigMXBean
     *
     * @param isAutoCommit the desired auto-commit default for connections
     */
-   public void setAutoCommit(boolean isAutoCommit)
+   public void setAutoCommit(Boolean isAutoCommit)
    {
       this.isAutoCommit = isAutoCommit;
    }
@@ -483,7 +482,7 @@ public class HikariConfig implements HikariConfigMXBean
          if (metricRegistry instanceof String) {
             try {
                InitialContext initCtx = new InitialContext();
-               metricRegistry = (MetricRegistry) initCtx.lookup((String) metricRegistry);
+               metricRegistry = initCtx.lookup((String) metricRegistry);
             }
             catch (NamingException e) {
                throw new IllegalArgumentException(e);
@@ -519,7 +518,7 @@ public class HikariConfig implements HikariConfigMXBean
          if (healthCheckRegistry instanceof String) {
             try {
                InitialContext initCtx = new InitialContext();
-               healthCheckRegistry = (HealthCheckRegistry) initCtx.lookup((String) healthCheckRegistry);
+               healthCheckRegistry = initCtx.lookup((String) healthCheckRegistry);
             }
             catch (NamingException e) {
                throw new IllegalArgumentException(e);

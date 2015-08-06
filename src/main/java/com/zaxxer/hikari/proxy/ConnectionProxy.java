@@ -176,7 +176,7 @@ public abstract class ConnectionProxy implements IHikariConnectionProxy
             if (isCommitStateDirty) {
                lastAccess = clockSource.currentTime();
 
-               if (!poolEntry.isAutoCommit) {
+               if (poolEntry.isAutoCommit != null && !poolEntry.isAutoCommit) {
                   delegate.rollback();
                   LOGGER.debug("{} - Executed rollback on connection {} due to dirty commit state on close().", poolEntry.parentPool, delegate);
                }
@@ -381,7 +381,7 @@ public abstract class ConnectionProxy implements IHikariConnectionProxy
          return (T) delegate;
       }
       else if (delegate instanceof Wrapper) {
-          return (T) delegate.unwrap(iface);
+          return delegate.unwrap(iface);
       }
 
       throw new SQLException("Wrapped connection is not an instance of " + iface);

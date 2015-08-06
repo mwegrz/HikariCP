@@ -46,7 +46,7 @@ public final class PoolElf
    private final String poolName;
    private final String catalog;
    private final Boolean isReadOnly;
-   private final boolean isAutoCommit;
+   private final Boolean isAutoCommit;
    private final boolean isUseJdbc4Validation;
    private final boolean isIsolateInternalQueries;
 
@@ -167,7 +167,10 @@ public final class PoolElf
       networkTimeout = getAndSetNetworkTimeout(connection, connectionTimeout);
       transactionIsolation = (transactionIsolation < 0 ? connection.getTransactionIsolation() : transactionIsolation);
 
-      connection.setAutoCommit(isAutoCommit);
+      if (isAutoCommit != null) {
+         connection.setAutoCommit(isAutoCommit);
+      }
+
       if (isReadOnly != null) {
          connection.setReadOnly(isReadOnly);
       }
@@ -202,7 +205,7 @@ public final class PoolElf
          }
    
          final int originalTimeout = getAndSetNetworkTimeout(connection, validationTimeout);
-   
+
          try (Statement statement = connection.createStatement()) {
             setQueryTimeout(statement, timeoutSec);
             if (statement.execute(config.getConnectionTestQuery())) {
@@ -210,7 +213,7 @@ public final class PoolElf
             }
          }
    
-         if (isIsolateInternalQueries && !isAutoCommit) {
+         if (isIsolateInternalQueries && isAutoCommit != null && !isAutoCommit) {
             connection.rollback();
          }
    
@@ -266,7 +269,11 @@ public final class PoolElf
          poolEntry.setReadOnly(isReadOnly);
       }
       poolEntry.setCatalog(catalog);
-      poolEntry.setAutoCommit(isAutoCommit);
+
+      if (isAutoCommit != null) {
+         poolEntry.setReadOnly(isAutoCommit);
+      }
+
       poolEntry.setNetworkTimeout(networkTimeout);
       poolEntry.setTransactionIsolation(transactionIsolation);
    }
@@ -434,7 +441,7 @@ public final class PoolElf
     * @param isAutoCommit whether to commit the SQL after execution or not
     * @throws SQLException throws if the init SQL execution fails
     */
-   private void executeSql(final Connection connection, final String sql, final boolean isAutoCommit) throws SQLException
+   private void executeSql(final Connection connection, final String sql, final Boolean isAutoCommit) throws SQLException
    {
       if (sql != null) {
          try (Statement statement = connection.createStatement()) {
@@ -442,7 +449,7 @@ public final class PoolElf
                statement.getResultSet().close();
             }
 
-            if (!isAutoCommit) {
+            if (isAutoCommit != null && !isAutoCommit) {
                connection.commit();
             }
          }

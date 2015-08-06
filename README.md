@@ -122,9 +122,10 @@ skip this method entirely and call ``addDataSourceProperty("pass", ...)``, for e
 ##### Frequently used
 
 &#9989;``autoCommit``<br/>
+**If your driver does not support transactions leave this setting undefined**
 This property controls the default auto-commit behavior of connections returned from the pool.
 It is a boolean value.
-*Default: true*
+*Default: none*
 
 &#8986;``connectionTimeout``<br/>
 This property controls the maximum number of milliseconds that a client (that's you) will wait
